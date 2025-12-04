@@ -1,0 +1,67 @@
+{
+  "version": "0.1",
+  "description": "Reference RAG configuration for the ContextCap EDBT paper. This file is not used for production API calls; it documents how domain-specific tools could be wired into the system.",
+  "domains": {
+    "traffic": {
+      "label": "Urban road traffic and weather",
+      "preferred_target_metrics": [
+        "traffic_volume"
+      ],
+      "generic_agents": [
+        "general_agent.build_general_profile",
+        "traffic_agent.build_traffic_profile"
+      ],
+      "domain_specific_libraries": [
+        {
+          "name": "pandas",
+          "role": "time-indexed aggregation and resampling of traffic and weather data"
+        },
+        {
+          "name": "numpy",
+          "role": "numeric operations for distributions and extreme value detection"
+        }
+      ],
+      "hypothetical_external_apis": [
+        {
+          "name": "CityTrafficAPI",
+          "endpoint": "https://api.city-traffic.example/v1/congestion",
+          "role": "current congestion level for specific road segments (not actually called in this prototype)"
+        },
+        {
+          "name": "WeatherHistoryAPI",
+          "endpoint": "https://api.weather-history.example/v1/archive",
+          "role": "historical weather context to complement local sensor data (not actually called in this prototype)"
+        }
+      ],
+      "prompt_hints": [
+        "When the domain is 'traffic', emphasise typical commuting hours (07:00\u201309:00 and 16:00\u201318:00).",
+        "Use differences in average volume between weekdays and weekends to explain recommendations.",
+        "Explain how adverse weather (rain, snow) interacts with volume differences when relevant."
+      ]
+    },
+    "energy": {
+      "label": "Building energy consumption",
+      "preferred_target_metrics": [
+        "power_kw",
+        "energy_kwh"
+      ],
+      "domain_specific_libraries": [
+        {
+          "name": "statsmodels",
+          "role": "seasonal decomposition of daily or hourly load curves"
+        }
+      ],
+      "hypothetical_external_apis": [
+        {
+          "name": "TariffAPI",
+          "endpoint": "https://api.energy-tariffs.example/v1/rates",
+          "role": "electricity price time series for cost-aware insights"
+        }
+      ],
+      "prompt_hints": [
+        "When the domain is 'energy', use degree-days (heating/cooling) to relate weather to demand.",
+        "Highlight weekends and holidays where building usage patterns change."
+      ]
+    }
+  }
+}

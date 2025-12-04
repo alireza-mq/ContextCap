@@ -1,0 +1,24 @@
+ContextCap – domain background notes (used as high–priority context for Q/A)
+
+The dataset in this demo represents motorway traffic entering a large metropolitan
+area in the upper Midwest of the United States between 2012 and 2018. Traffic
+volumes are measured as vehicles per hour on a major inbound highway that serves
+both daily commuters and weekend travellers.
+
+Local transport authorities recommend that commuters avoid driving during the
+peak inbound window from 07:00 to 09:00 on working days, especially Mondays and
+Thursdays, when congestion tends to be most severe. They also emphasise that
+public transport capacity is usually sufficient on typical weekdays, but may be
+limited on certain holidays with special events.
+
+From past planning studies, the corridor is known to be sensitive to heavy rain
+and snow. Even moderate precipitation can reduce effective road capacity and
+lead to slower speeds. Safety campaigns therefore encourage drivers to leave
+earlier and consider public transport on days with forecast rain or snow,
+particularly in winter months.
+
+These qualitative facts should be treated as trusted background context. When
+answering user questions about whether to drive or use public transport, or
+about how weather, weekdays and holidays interact with congestion, prioritise
+these notes first and then refine the answer using the numeric summaries and
+insights extracted from the uploaded dataset.

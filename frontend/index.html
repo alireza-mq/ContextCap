@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ContextCap – Time-series Explorer</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <!-- Chart.js for Step 3 charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Main front-end logic -->
+    <script defer src="/static/app.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <!-- ============================================================
+           Header
+           ============================================================ -->
+      <header class="header">
+        <div>
+          <h1>ContextCap – Time-series Explorer</h1>
+          <p>
+            From raw multivariate time-series to domain-aware captions and
+            insights: upload a dataset, validate its profile, generate insights,
+            and explore interactive explanations with Q/A.
+          </p>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           Step navigation
+           ============================================================ -->
+      <nav class="step-nav">
+        <button class="step-btn step-active" data-step="1">
+          <span>1</span> Profile
+        </button>
+        <button class="step-btn step-disabled" data-step="2">
+          <span>2</span> Insights
+        </button>
+        <button class="step-btn step-disabled" data-step="3">
+          <span>3</span> Explore &amp; Q/A
+        </button>
+      </nav>
+
+      <!-- ============================================================
+           STEP 1 · DATASET UPLOAD & PROFILING
+           ============================================================ -->
+      <section id="page-profile" class="page-section">
+        <div class="section-header">
+          <h2>Step 1 · Dataset Upload and Profiling</h2>
+          <p>
+            Upload a CSV time-series file, inspect the inferred domain, variable
+            roles, and data quality, then approve them before generating
+            insights.
+          </p>
+        </div>
+
+        <!-- File upload + profiling trigger -->
+        <div class="upload-row">
+          <input type="file" id="fileInput" accept=".csv" />
+          <button id="uploadBtn" class="primary-btn" disabled>
+            Upload &amp; Profile
+          </button>
+          <span id="uploadStatus" class="status-label"></span>
+        </div>
+
+        <!-- 2×2 profiling grid. All cards start hidden and are revealed
+             step-by-step by app.js -->
+        <div class="profile-layout">
+          <!-- Row 1 · left: domain detection -->
+          <div id="domainCard" class="card card-domain hidden">
+            <h3>Domain Candidates</h3>
+            <div id="domainList" class="domain-list">
+              <p class="placeholder">
+                Domain suggestions will appear here after profiling.
+              </p>
+            </div>
+          </div>
+
+          <!-- Row 1 · right: data quality + range -->
+          <div id="qualityCard" class="card card-quality hidden">
+            <h3>Data Quality Summary</h3>
+            <div id="qualityBox" class="quality-box">
+              <p class="placeholder">
+                Quality summary will appear here after profiling.
+              </p>
+            </div>
+
+            <div class="range-control">
+              <div>Analysis date range (optional):</div>
+              <div class="range-inputs">
+                <input type="date" id="rangeStart" />
+                <span>to</span>
+                <input type="date" id="rangeEnd" />
+              </div>
+              <p class="range-help">
+                By default, ContextCap uses the full available range. Adjust the
+                dates if you want to limit the analysis window.
+              </p>
+            </div>
+
+            <div class="quality-approval">
+              <label>
+                <input type="checkbox" id="qualityApprove" />
+                I confirm that this quality summary and analysis range are
+                acceptable.
+              </label>
+            </div>
+          </div>
+
+          <!-- Row 2 · left: variable roles -->
+          <div id="variablesCard" class="card card-variables hidden">
+            <h3>Variables Analysis</h3>
+            <div id="variablesList" class="variables-list">
+              <p class="placeholder">
+                Inferred variable roles and descriptions will appear here.
+              </p>
+            </div>
+          </div>
+
+          <!-- Row 2 · right: dataset head preview -->
+          <div id="previewCard" class="card card-preview hidden">
+            <h3>Dataset Preview</h3>
+            <div id="previewTable" class="preview-table-wrapper">
+              <p class="placeholder">
+                The first rows of your dataset will appear here after profiling.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1 → Step 2 transition button -->
+        <div id="toInsightsRow" class="step-actions-center hidden">
+          <button id="toInsightsBtn" class="primary-btn" disabled>
+            Continue to Insight Generation
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           STEP 2 · INSIGHT GENERATION
+           ============================================================ -->
+      <section id="page-insights" class="page-section hidden">
+        <div class="section-header">
+          <h2>Step 2 · Insight Generation</h2>
+          <p>
+            ContextCap runs generic and domain-aware agents over the dataset to
+            surface trends, anomalies, relationships, and segment effects.
+          </p>
+        </div>
+
+        <!-- Context summary + run button -->
+        <div class="insight-intro card">
+          <div>
+            <h3>Current Context</h3>
+            <p id="insightsContext">No dataset loaded yet.</p>
+          </div>
+          <div>
+            <button id="runInsightsBtn" class="primary-btn" disabled>
+              Run Insight Generation
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading banner while agents run -->
+        <div id="insightsLoading" class="loading-panel hidden">
+          <div class="loader"></div>
+          <div>
+            <h3>Running Insight Agents...</h3>
+            <p>
+              Generic Agents: statistical trend detection, anomaly detection,
+              correlation analysis, segment comparison.
+            </p>
+            <p>
+              Domain-Specific Agents: traffic patterns by hour-of-day,
+              holiday-aware demand, weather-sensitive congestion profiling.
+            </p>
+          </div>
+        </div>
+
+        <!-- Ranked insights (left) + detail (right) -->
+        <div class="insights-layout">
+          <div class="card card-insights">
+            <div class="insights-header">
+              <h3>Ranked Insights</h3>
+              <div class="insights-controls">
+                <label>
+                  Sort by
+                  <select id="insightSortSelect">
+                    <option value="score">Score</option>
+                    <option value="severity">Severity</option>
+                    <option value="confidence">Confidence</option>
+                    <option value="type">Type</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div id="insightList" class="insight-list">
+              <p class="placeholder">
+                Click "Run Insight Generation" to see ranked insights.
+              </p>
+            </div>
+          </div>
+
+          <div class="card card-insight-detail">
+            <h3>Insight Detail</h3>
+            <div id="insightDetail" class="detail-panel">
+              <p class="placeholder">
+                Select an insight from the list to inspect evidence and
+                metadata.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button id="toExploreBtn" class="primary-btn" disabled>
+            Continue to Interactive Exploration
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           STEP 3 · INTERACTIVE VISUALIZATION & Q/A
+           ============================================================ -->
+      <section id="page-visual" class="page-section hidden">
+        <div class="section-header">
+          <h2>Step 3 · Interactive Visualization and Q/A</h2>
+          <p>
+            Explore the dataset through domain-aware charts and ask high-level
+            questions grounded in the generated insights.
+          </p>
+        </div>
+
+        <div class="visual-layout">
+          <!-- Charts / dataset summary -->
+          <div class="card card-charts">
+            <div class="charts-header">
+              <h3>Dataset Summary &amp; Charts</h3>
+              <p id="summaryText" class="summary-text">
+                Run insight generation first to populate summary and charts.
+              </p>
+            </div>
+            <div class="chart-slider">
+              <div class="chart-tabs">
+                <button
+                  class="chart-tab chart-tab-active"
+                  data-chart="target"
+                >
+                  Target over Time
+                </button>
+                <button class="chart-tab" data-chart="holiday">
+                  Holiday vs Non-holiday
+                </button>
+                <button class="chart-tab" data-chart="weather">
+                  Weather Impact
+                </button>
+              </div>
+              <div class="chart-views">
+                <div id="chart-target-wrapper" class="chart-view">
+                  <canvas id="chartTarget"></canvas>
+                </div>
+                <div
+                  id="chart-holiday-wrapper"
+                  class="chart-view hidden"
+                >
+                  <canvas id="chartHoliday"></canvas>
+                </div>
+                <div
+                  id="chart-weather-wrapper"
+                  class="chart-view hidden"
+                >
+                  <canvas id="chartWeather"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q/A panel -->
+          <div class="card card-qa">
+            <h3>Ask the Dataset</h3>
+            <p class="qa-help">
+              Ask a question that relates to traffic and context in this
+              dataset, for example:
+              <em
+                >"Do you suggest using personal car or public transportation on
+                holidays?"</em
+              >
+            </p>
+            <textarea
+              id="qaInput"
+              rows="4"
+              placeholder="Type your question here..."
+            ></textarea>
+            <div class="qa-actions">
+              <button id="qaAskBtn" class="primary-btn" disabled>
+                Ask
+              </button>
+            </div>
+            <div id="qaAnswerBox" class="qa-answer-box">
+              <p class="placeholder">Your answer will appear here.</p>
+            </div>
+            <div id="qaFeedbackBox" class="qa-feedback hidden">
+              <span>Was this answer helpful?</span>
+              <button id="qaThumbUp" class="feedback-btn">👍</button>
+              <button id="qaThumbDown" class="feedback-btn">👎</button>
+            </div>
+            <div id="qaCorrectionBox" class="qa-correction hidden">
+              <label for="qaCorrectionInput"
+                >What would be a better answer?</label
+              >
+              <textarea id="qaCorrectionInput" rows="3"></textarea>
+              <button id="qaCorrectionSubmit" class="secondary-btn">
+                Submit Correction
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
