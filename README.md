@@ -1,6 +1,6 @@
 # ContextCap
 
-ContextCap is a small, self-contained prototype for **domain-aware exploration
+ContextCap is a feed-back driven and agent-based system for **contextual captioning
 of multivariate time-series datasets**. It was originally built for the EDBT
 paper demo on motorway traffic volume, and is now structured as a reusable
 mini-application.
